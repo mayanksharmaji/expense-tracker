@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}');
+    }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📜 Expense History</h1>
+    </div>
+
+    {% if grouped %}
+
+    {% for date_label, expenses in grouped %}
+
+    <div class="date-header">{{ date_label }}</div>
+
+    {% for expense in expenses %}
+    <div class="expense-card">
+        <div class="expense-left">
+            <span class="expense-category">{{ category_emojis.get(expense['category'], '📦') }}</span>
+            <div class="expense-info">
+                <span class="expense-amount">₹{{ "%.0f"|format(expense['amount']) }}</span>
+                <span class="expense-cat-name">{{ expense['category'] }}</span>
+                {% if expense['note'] %}
+                <span class="expense-note">{{ expense['note'] }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="expense-right">
+            {% if expense['time'] %}
+            <span class="expense-time">{{ expense['time'] }}</span>
+            {% endif %}
+            <form method="POST" action="/delete/{{ expense['id'] }}" style="display:inline;">
+                <button type="submit" class="btn-delete" onclick="return confirm('Delete this expense?')">🗑</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% endfor %}
+
+    <div class="total-bar">
+        <strong>Total Spent: ₹{{ "%.0f"|format(total) }}</strong>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <p>No expenses yet. Start tracking your spending!</p>
+        <a href="/" class="btn btn-primary">Add Your First Expense</a>
+    </div>
+    {% endif %}
+
+    <div class="back-link">
+        <a href="/" class="btn btn-outline">← Back to Dashboard</a>
+    </div>
+</div>
+
+</body>
+</html>

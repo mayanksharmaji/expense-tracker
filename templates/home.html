@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}" type="image/svg+xml">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}');
+    }
+    </script>
+</head>
+<body>
+
+<div class="bg-circles">
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+    <div class="bg-circle c3"></div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h1>💰 Expense Tracker</h1>
+    </div>
+
+    {% if cycle_ended %}
+    <div class="banner banner-warning">
+        <strong>Your cycle has ended!</strong>
+        <p>It's time to start a new cycle.</p>
+    </div>
+    {% endif %}
+
+    {% if plan %}
+
+    {% set spent_pct = (total_spent / spending_budget * 100)|round|int if spending_budget > 0 else 0 %}
+
+    <div class="balance-card">
+        <div class="balance-label">Remaining Budget</div>
+        <div class="balance-amount" data-target="{{ "%.0f"|format(remaining_budget) }}">₹0</div>
+        <div class="balance-sub">of ₹{{ "%.0f"|format(spending_budget) }}</div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width:{{ spent_pct }}%"></div>
+        </div>
+        <div class="balance-stats">
+            <span>Spent: ₹{{ "%.0f"|format(total_spent) }}</span>
+            <span>{{ spent_pct }}% used</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Add Expense</h2>
+        <form method="POST" action="/add" class="expense-form" id="expenseForm">
+            <div class="form-row">
+                <div class="amount-wrap">
+                    <span class="amount-prefix">₹</span>
+                    <input type="number" step="0.01" name="amount" placeholder="0" required>
+                </div>
+                <select name="category" required>
+                    <option value="Food">🍔 Food</option>
+                    <option value="Travel">🚌 Travel</option>
+                    <option value="Shopping">🛍 Shopping</option>
+                    <option value="Bills">💡 Bills</option>
+                    <option value="Medical">💊 Medical</option>
+                    <option value="Entertainment">🎮 Entertainment</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="Others">📦 Others</option>
+                </select>
+                <input type="text" name="note" placeholder="Note (optional)">
+                <button type="submit" class="btn btn-add ripple">+ Add</button>
+            </div>
+        </form>
+    </div>
+
+    {% if health %}
+    <div class="health-card health-{{ health[2] }}">
+        <div class="health-status">{{ health[0] }}</div>
+        <div class="health-detail">{{ health[1] }}</div>
+        <div class="health-today">Today: ₹{{ "%.0f"|format(today_spent) }} of ₹{{ daily_allowance }}</div>
+    </div>
+    {% endif %}
+
+    {% if category_stats %}
+    <div class="section">
+        <h2>Spending by Category</h2>
+        {% set max_val = category_stats[0][1] if category_stats else 1 %}
+        {% for cat, amount in category_stats %}
+        <div class="stat-row">
+            <span class="stat-icon">{{ category_emojis.get(cat, '📦') }}</span>
+            <span class="stat-name">{{ cat }}</span>
+            <span class="stat-bar-bg"><span class="stat-bar-fill" style="width:{{ (amount / max_val * 100)|round }}%"></span></span>
+            <span class="stat-amount">₹{{ "%.0f"|format(amount) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if recent_expenses %}
+    <div class="section">
+        <h2>Recent Expenses</h2>
+        {% for expense in recent_expenses %}
+        <div class="expense-card">
+            <div class="expense-left">
+                <span class="expense-category">{{ category_emojis.get(expense['category'], '📦') }}</span>
+                <div class="expense-info">
+                    <span class="expense-amount">₹{{ "%.0f"|format(expense['amount']) }}</span>
+                    <span class="expense-cat-name">{{ expense['category'] }}</span>
+                    {% if expense['note'] %}
+                    <span class="expense-note">{{ expense['note'] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="expense-right">
+                {% if expense['date'] %}
+                <span class="expense-time">{{ expense['date'][11:16] }}</span>
+                {% endif %}
+                <form method="POST" action="/delete/{{ expense['id'] }}" style="display:inline;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('Delete this expense?')"></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        <div style="text-align:center; margin-top:10px;">
+            <a href="/history" class="btn btn-outline">View Full History</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mini-cards">
+        <div class="mini-card">
+            <span class="mini-label">Pocket Money</span>
+            <span class="mini-value">₹{{ "%.0f"|format(plan['pocket_money']) }}</span>
+        </div>
+        <div class="mini-card">
+            <span class="mini-label">Daily Allowance</span>
+            <span class="mini-value">₹{{ daily_allowance }}</span>
+        </div>
+        <div class="mini-card">
+            <span class="mini-label">Savings Goal</span>
+            <span class="mini-value">₹{{ "%.0f"|format(plan['savings_goal']) }}</span>
+        </div>
+        <div class="mini-card">
+            <span class="mini-label">Cycle</span>
+            <span class="mini-value">{{ plan['cycle_length'] }} days</span>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-bottom:14px;">
+        <button class="btn btn-danger ripple" onclick="confirmNewCycle()">Start New Cycle</button>
+    </div>
+
+    <form method="POST" action="/delete_plan" id="deletePlanForm" style="display:none;"></form>
+
+    {% else %}
+
+    <div class="setup-card">
+        <h2>Welcome!</h2>
+        <p style="text-align:center; opacity:0.5; margin-bottom:20px; font-size:14px;">
+            Set up your plan to start tracking expenses.
+        </p>
+        <form method="POST" action="/save_plan">
+            <div class="form-group">
+                <label>Pocket Money (₹)</label>
+                <input type="number" step="0.01" name="pocket_money" required placeholder="e.g. 5000">
+            </div>
+            <div class="form-group">
+                <label>Savings Goal (₹)</label>
+                <input type="number" step="0.01" name="savings_goal" required placeholder="e.g. 1000">
+            </div>
+            <div class="form-group">
+                <label>Cycle Length (Days)</label>
+                <input type="number" name="cycle_length" required placeholder="e.g. 30">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full ripple">Start Plan</button>
+        </form>
+        <div style="text-align:center; margin-top:16px;">
+            <a href="/history" class="btn btn-outline">View Expense History</a>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<script>
+function confirmNewCycle() {
+    if (confirm('Delete current plan and start a new cycle?\n\nYour expenses will be kept.')) {
+        document.getElementById('deletePlanForm').submit();
+    }
+}
+
+// Ripple effect
+document.querySelectorAll('.ripple').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        let x = e.clientX - e.target.getBoundingClientRect().left;
+        let y = e.clientY - e.target.getBoundingClientRect().top;
+        let ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 500);
+    });
+});
+
+// Count up animation
+function animateValue(el, target) {
+    let current = 0;
+    let steps = 30;
+    let increment = target / steps;
+    let timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            el.textContent = '₹' + Math.round(target);
+            clearInterval(timer);
+        } else {
+            el.textContent = '₹' + Math.round(current);
+        }
+    }, 20);
+}
+
+document.querySelectorAll('[data-target]').forEach(el => {
+    animateValue(el, parseInt(el.dataset.target));
+});
+</script>
+
+</body>
+</html>
