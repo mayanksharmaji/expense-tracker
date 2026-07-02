@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 data class DashboardState(
     val plan: PlanEntity? = null,
@@ -79,6 +80,14 @@ class DashboardViewModel(app: ExpenseTrackerApp) : ViewModel() {
                 "%.2f".format(spendingBudget / plan.cycleLength).toDouble()
             else 0.0
             remainingBudget = "%.2f".format(spendingBudget - totalSpent).toDouble()
+
+            if (plan.startDate.isNotBlank()) {
+                val start = try { LocalDate.parse(plan.startDate.take(10)) } catch (_: Exception) { null }
+                if (start != null) {
+                    val elapsed = ChronoUnit.DAYS.between(start, today)
+                    if (elapsed >= plan.cycleLength) cycleEnded = true
+                }
+            }
 
             if (dailyAllowance > 0) {
                 val diff = dailyAllowance - todaySpent

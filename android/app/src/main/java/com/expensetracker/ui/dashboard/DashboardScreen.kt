@@ -389,23 +389,23 @@ fun MiniCards(state: DashboardState) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        MiniCard("Pocket Money", "₹${plan.pocketMoney.toInt()}")
-        MiniCard("Daily Allowance", "₹${state.dailyAllowance}")
+        MiniCard("Pocket Money", "₹${plan.pocketMoney.toInt()}", Modifier.weight(1f))
+        MiniCard("Daily Allowance", "₹${state.dailyAllowance}", Modifier.weight(1f))
     }
     Spacer(Modifier.height(8.dp))
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        MiniCard("Savings Goal", "₹${plan.savingsGoal.toInt()}")
-        MiniCard("Cycle", "${plan.cycleLength} days")
+        MiniCard("Savings Goal", "₹${plan.savingsGoal.toInt()}", Modifier.weight(1f))
+        MiniCard("Cycle", "${plan.cycleLength} days", Modifier.weight(1f))
     }
 }
 
 @Composable
-fun MiniCard(label: String, value: String) {
+fun MiniCard(label: String, value: String, modifier: Modifier = Modifier) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         color = SurfaceCard.copy(alpha = 0.06f)
     ) {
