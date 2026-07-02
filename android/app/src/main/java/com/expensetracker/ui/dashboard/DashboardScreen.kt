@@ -372,7 +372,7 @@ fun MiniCards(state: DashboardState) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        MiniCard("Savings Goal", "₹ss${plan.savingsGoal.toInt()}")
+        MiniCard("Savings Goal", "₹${plan.savingsGoal.toInt()}")
         MiniCard("Cycle", "${plan.cycleLength} days")
     }
 }
