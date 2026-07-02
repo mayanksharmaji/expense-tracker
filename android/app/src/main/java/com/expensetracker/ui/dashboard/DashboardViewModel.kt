@@ -51,7 +51,8 @@ class DashboardViewModel(app: ExpenseTrackerApp) : ViewModel() {
     }
 
     private fun updateState(expenses: List<ExpenseEntity>, plan: PlanEntity?) {
-        val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+        val todayDate = LocalDate.now()
+        val today = todayDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
         val totalSpent = expenses.sumOf { it.amount }
         val todaySpent = expenses
@@ -84,7 +85,7 @@ class DashboardViewModel(app: ExpenseTrackerApp) : ViewModel() {
             if (plan.startDate.isNotBlank()) {
                 val start = try { LocalDate.parse(plan.startDate.take(10)) } catch (_: Exception) { null }
                 if (start != null) {
-                    val elapsed = ChronoUnit.DAYS.between(start, today)
+                    val elapsed = ChronoUnit.DAYS.between(start, todayDate)
                     if (elapsed >= plan.cycleLength) cycleEnded = true
                 }
             }
