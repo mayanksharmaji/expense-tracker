@@ -168,7 +168,7 @@ fun BalanceCard(state: DashboardState) {
                 .padding(22.dp)
         ) {
             Column {
-                Text("Remaining Budget", fontSize = 11.sp, opacity = 0.75f)
+                Text("Remaining Budget", fontSize = 11.sp, color = TextPrimary.copy(alpha = 0.75f))
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "₹${state.remainingBudget.toInt()}",
@@ -176,7 +176,7 @@ fun BalanceCard(state: DashboardState) {
                 )
                 Text(
                     "of ₹${state.spendingBudget.toInt()}",
-                    fontSize = 13.sp, opacity = 0.6f
+                    fontSize = 13.sp, color = TextPrimary.copy(alpha = 0.6f)
                 )
                 Spacer(Modifier.height(14.dp))
                 LinearProgressIndicator(
@@ -193,8 +193,8 @@ fun BalanceCard(state: DashboardState) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Spent: ₹${state.totalSpent.toInt()}", fontSize = 12.sp, opacity = 0.7f)
-                    Text("$spentPct% used", fontSize = 12.sp, opacity = 0.7f)
+                    Text("Spent: ₹${state.totalSpent.toInt()}", fontSize = 12.sp, color = TextPrimary.copy(alpha = 0.7f))
+                    Text("$spentPct% used", fontSize = 12.sp, color = TextPrimary.copy(alpha = 0.7f))
                 }
             }
         }
