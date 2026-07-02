@@ -89,11 +89,13 @@ fun HistoryScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Text(
                                         categoryEmojis[expense.category] ?: "📦",
                                         fontSize = 22.sp
@@ -111,12 +113,20 @@ fun HistoryScreen(
                                         }
                                     }
                                 }
-                                if (expense.date.length >= 16) {
-                                    Text(
-                                        expense.date.substring(11, 16),
-                                        fontSize = 11.sp,
-                                        color = TextTertiary
-                                    )
+                                Column(horizontalAlignment = Alignment.End) {
+                                    if (expense.date.length >= 16) {
+                                        Text(
+                                            expense.date.substring(11, 16),
+                                            fontSize = 11.sp,
+                                            color = TextTertiary
+                                        )
+                                    }
+                                    TextButton(
+                                        onClick = { viewModel.deleteExpense(expense.id) },
+                                        contentPadding = PaddingValues(4.dp)
+                                    ) {
+                                        Text("🗑", fontSize = 14.sp)
+                                    }
                                 }
                             }
                         }

@@ -101,7 +101,7 @@ fun DashboardScreen(
                 item {
                     SectionCard(title = "Recent Expenses") {
                         state.recentExpenses.forEach { expense ->
-                            ExpenseRow(expense)
+                            ExpenseRow(expense, onDelete = { viewModel.deleteExpense(it) })
                         }
                         Spacer(Modifier.height(8.dp))
                         TextButton(
@@ -310,7 +310,7 @@ fun CategoryRow(category: String, amount: Double, maxVal: Double) {
 }
 
 @Composable
-fun ExpenseRow(expense: com.expensetracker.data.local.entity.ExpenseEntity) {
+fun ExpenseRow(expense: com.expensetracker.data.local.entity.ExpenseEntity, onDelete: (Long) -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -321,11 +321,13 @@ fun ExpenseRow(expense: com.expensetracker.data.local.entity.ExpenseEntity) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(categoryEmojis[expense.category] ?: "📦", fontSize = 22.sp)
                 Spacer(Modifier.width(12.dp))
                 Column {
@@ -336,12 +338,20 @@ fun ExpenseRow(expense: com.expensetracker.data.local.entity.ExpenseEntity) {
                     }
                 }
             }
-            if (expense.date.isNotBlank()) {
-                Text(
-                    expense.date.substring(11, 16),
-                    fontSize = 11.sp,
-                    color = TextTertiary
-                )
+            Column(horizontalAlignment = Alignment.End) {
+                if (expense.date.length >= 16) {
+                    Text(
+                        expense.date.substring(11, 16),
+                        fontSize = 11.sp,
+                        color = TextTertiary
+                    )
+                }
+                TextButton(
+                    onClick = { onDelete(expense.id) },
+                    contentPadding = PaddingValues(4.dp)
+                ) {
+                    Text("🗑", fontSize = 14.sp)
+                }
             }
         }
     }

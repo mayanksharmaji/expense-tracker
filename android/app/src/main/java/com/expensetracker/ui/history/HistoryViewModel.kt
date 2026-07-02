@@ -53,6 +53,12 @@ class HistoryViewModel(app: ExpenseTrackerApp) : ViewModel() {
         }
     }
 
+    fun deleteExpense(id: Long) {
+        viewModelScope.launch {
+            repository.deleteExpenseAndSync(id)
+        }
+    }
+
     class Factory(private val app: ExpenseTrackerApp) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

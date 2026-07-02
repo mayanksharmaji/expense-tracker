@@ -105,6 +105,12 @@ class DashboardViewModel(app: ExpenseTrackerApp) : ViewModel() {
         )
     }
 
+    fun deleteExpense(id: Long) {
+        viewModelScope.launch {
+            repository.deleteExpenseAndSync(id)
+        }
+    }
+
     fun refresh() {
         viewModelScope.launch {
             repository.syncAll()

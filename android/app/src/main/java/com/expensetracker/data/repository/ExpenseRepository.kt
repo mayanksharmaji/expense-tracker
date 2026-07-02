@@ -16,13 +16,13 @@ class ExpenseRepository(private val app: ExpenseTrackerApp) {
 
     val allExpenses: Flow<List<ExpenseEntity>> = expenseDao.getAll()
 
-    suspend fun addExpenseLocally(amount: Double, category: String, note: String): Long {
+    suspend fun addExpenseLocally(amount: Double, category: String, note: String, date: String = ""): Long {
         return expenseDao.insert(
             ExpenseEntity(
                 amount = amount,
                 category = category,
                 note = note,
-                date = "",
+                date = date,
                 synced = false
             )
         )
