@@ -1,6 +1,7 @@
 package com.expensetracker
 
 import android.app.Application
+import com.expensetracker.data.local.AppDatabase
 import com.expensetracker.data.sync.SyncManager
 
 class ExpenseTrackerApp : Application() {

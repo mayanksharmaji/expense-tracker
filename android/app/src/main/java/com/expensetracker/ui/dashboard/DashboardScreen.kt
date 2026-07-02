@@ -56,7 +56,7 @@ fun DashboardScreen(
                 containerColor = Green500,
                 contentColor = TextPrimary
             ) {
-                Text("+", fontSize = 24.fontSize, fontWeight = FontWeight.Bold)
+                Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         },
         containerColor = BackgroundDark
@@ -372,7 +372,7 @@ fun MiniCards(state: DashboardState) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        MiniCard("Savings Goal", "₹${plan.savingsGoal.toInt()}")
+        MiniCard("Savings Goal", "₹ss${plan.savingsGoal.toInt()}")
         MiniCard("Cycle", "${plan.cycleLength} days")
     }
 }
@@ -380,7 +380,7 @@ fun MiniCards(state: DashboardState) {
 @Composable
 fun MiniCard(label: String, value: String) {
     Surface(
-        modifier = Modifier.weight(1f),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         color = SurfaceCard.copy(alpha = 0.06f)
     ) {
