@@ -5,7 +5,7 @@ import com.expensetracker.data.local.AppDatabase
 import com.expensetracker.data.sync.SyncManager
 
 class ExpenseTrackerApp : Application() {
-    val database by lazy { data.local.AppDatabase.getInstance(this) }
+    val database by lazy { AppDatabase.getInstance(this) }
     val syncManager by lazy { SyncManager(this) }
 
     override fun onCreate() {
