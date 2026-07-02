@@ -22,7 +22,7 @@ import com.expensetracker.ui.theme.*
 fun PlanScreen(
     onBack: () -> Unit,
     viewModel: PlanViewModel = viewModel(factory = PlanViewModel.Factory(
-        androidx.compose.ui.platform.LocalContext.applicationContext as ExpenseTrackerApp
+        androidx.compose.ui.platform.LocalContext.current.applicationContext as ExpenseTrackerApp
     ))
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

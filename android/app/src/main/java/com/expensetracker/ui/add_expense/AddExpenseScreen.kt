@@ -21,7 +21,7 @@ import com.expensetracker.ui.theme.*
 fun AddExpenseScreen(
     onBack: () -> Unit,
     viewModel: AddExpenseViewModel = viewModel(factory = AddExpenseViewModel.Factory(
-        androidx.compose.ui.platform.LocalContext.applicationContext as ExpenseTrackerApp
+        androidx.compose.ui.platform.LocalContext.current.applicationContext as ExpenseTrackerApp
     ))
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

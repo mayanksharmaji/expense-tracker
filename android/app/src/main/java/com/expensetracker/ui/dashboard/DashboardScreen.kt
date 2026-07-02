@@ -35,7 +35,7 @@ fun DashboardScreen(
     onHistory: () -> Unit,
     onPlanSetup: () -> Unit,
     viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory(
-        androidx.compose.ui.platform.LocalContext.applicationContext as ExpenseTrackerApp
+        androidx.compose.ui.platform.LocalContext.current.applicationContext as ExpenseTrackerApp
     ))
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
