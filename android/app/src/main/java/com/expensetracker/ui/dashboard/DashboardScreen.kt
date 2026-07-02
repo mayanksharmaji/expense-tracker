@@ -119,11 +119,36 @@ fun DashboardScreen(
                 item {
                     Button(
                         onClick = onPlanSetup,
-                        colors = ButtonDefaults.buttonColors(containerColor = Red500),
+                        colors = ButtonDefaults.buttonColors(containerColor = Purple500),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Start New Cycle")
+                    }
+                }
+                item {
+                    var showDeleteDialog by remember { mutableStateOf(false) }
+                    if (showDeleteDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteDialog = false },
+                            title = { Text("Delete Plan?") },
+                            text = { Text("Your expenses will be kept. Only the budget plan will be removed.") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    viewModel.deletePlan()
+                                    showDeleteDialog = false
+                                }) { Text("Delete", color = Red500) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                            }
+                        )
+                    }
+                    TextButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Delete Current Plan", color = Red500)
                     }
                 }
             }
