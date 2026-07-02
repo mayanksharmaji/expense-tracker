@@ -18,10 +18,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
+          cat local.properties
           ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
