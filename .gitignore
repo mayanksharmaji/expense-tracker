@@ -2,3 +2,13 @@ __pycache__/
 *.pyc
 *.db
 .env
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.iml
+.idea/
+.gradle/
+

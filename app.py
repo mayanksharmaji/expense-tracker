@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime, date, timedelta, timezone
 
@@ -231,6 +231,134 @@ def history():
         total=total,
         category_emojis=CATEGORY_EMOJIS
     )
+
+# ── API routes for Android app ──
+
+@app.route('/api/plan', methods=['GET'])
+def api_get_plan():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM plan ORDER BY id DESC LIMIT 1")
+    plan = cursor.fetchone()
+    conn.close()
+    if not plan:
+        return jsonify(None)
+    return jsonify({
+        'id': plan['id'],
+        'pocket_money': plan['pocket_money'],
+        'savings_goal': plan['savings_goal'],
+        'cycle_length': plan['cycle_length'],
+        'start_date': plan['start_date']
+    })
+
+@app.route('/api/plan', methods=['POST'])
+def api_save_plan():
+    data = request.get_json()
+    conn = sqlite3.connect('expenses.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM plan")
+    cursor.execute(
+        "INSERT INTO plan (pocket_money, savings_goal, cycle_length) VALUES (?, ?, ?)",
+        (data['pocket_money'], data['savings_goal'], data['cycle_length'])
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/plan', methods=['DELETE'])
+def api_delete_plan():
+    conn = sqlite3.connect('expenses.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM plan")
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/expenses', methods=['GET'])
+def api_get_expenses():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM expenses ORDER BY date DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([{
+        'id': r['id'],
+        'amount': r['amount'],
+        'category': r['category'],
+        'note': r['note'],
+        'date': r['date']
+    } for r in rows])
+
+@app.route('/api/expenses', methods=['POST'])
+def api_add_expense():
+    data = request.get_json()
+    conn = sqlite3.connect('expenses.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO expenses (amount, category, note) VALUES (?, ?, ?)",
+        (data['amount'], data['category'], data.get('note', ''))
+    )
+    conn.commit()
+    expense_id = cursor.lastrowid
+    conn.close()
+    return jsonify({'id': expense_id, 'status': 'ok'}), 201
+
+@app.route('/api/expenses/<int:expense_id>', methods=['DELETE'])
+def api_delete_expense(expense_id):
+    conn = sqlite3.connect('expenses.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/stats')
+def api_stats():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM plan ORDER BY id DESC LIMIT 1")
+    plan = cursor.fetchone()
+    cursor.execute("SELECT * FROM expenses ORDER BY date DESC")
+    expenses = cursor.fetchall()
+    conn.close()
+
+    total_spent = 0
+    category_stats = {}
+    today_total = 0
+    today_str = today_utc().strftime('%Y-%m-%d')
+
+    for e in expenses:
+        total_spent += e['amount']
+        cat = e['category']
+        category_stats[cat] = category_stats.get(cat, 0) + e['amount']
+        if e['date'] and e['date'][:10] == today_str:
+            today_total += e['amount']
+
+    result = {
+        'total_spent': round(total_spent, 2),
+        'today_spent': round(today_total, 2),
+        'categories': {k: round(v, 2) for k, v in category_stats.items()},
+        'expense_count': len(expenses)
+    }
+
+    if plan:
+        spending_budget = plan['pocket_money'] - plan['savings_goal']
+        daily_allowance = round(spending_budget / plan['cycle_length'], 2)
+        remaining = round(spending_budget - total_spent, 2)
+        start_d = parse_date(plan['start_date'])
+        elapsed = (today_utc() - start_d).days if start_d else 0
+        result.update({
+            'pocket_money': plan['pocket_money'],
+            'savings_goal': plan['savings_goal'],
+            'cycle_length': plan['cycle_length'],
+            'spending_budget': round(spending_budget, 2),
+            'daily_allowance': daily_allowance,
+            'remaining_budget': remaining,
+            'days_elapsed': elapsed,
+            'cycle_ended': elapsed >= plan['cycle_length'] if start_d else False
+        })
+
+    return jsonify(result)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
